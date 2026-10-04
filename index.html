@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CYBER BREAKER // Neon Yellow Edition</title>
+  <meta name="description" content="Game Block Breaker modern dengan aksen kuning terang futuristik, fitur kenyamanan mata (Eye-Care), sound synthesizer, power-ups lengkap, dan ragam level seru!">
+  
+  <!-- Typography: Max 2 Fonts (Outfit for UI, Orbitron for Arcade Numbers & Headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mode-default">
+  <div id="ambient-overlay" class="ambient-overlay"></div>
+
+  <!-- Background decorative elements -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Main Game Container -->
+  <main class="game-wrapper" id="game-container">
+    
+    <!-- Top Bar / Header & Eye-Care Controls -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="brand-badge">ARCADE 2.0</span>
+        <h1 class="brand-title">CYBER<span>BREAKER</span></h1>
+      </div>
+
+      <!-- Quick Eye-Care / Comfort & Utility Controls -->
+      <div class="comfort-controls">
+        <div class="control-group" title="Mode Ramah Mata: Menyesuaikan intensitas cahaya kuning agar sejuk di mata">
+          <label for="eye-mode-select" class="control-label">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span class="label-text">Visual</span>
+          </label>
+          <select id="eye-mode-select" class="styled-select">
+            <option value="cyber">⚡ Cyber Neon (Default)</option>
+            <option value="warm">🌙 Warm Amber (Eye-Care)</option>
+            <option value="soft">✨ Soft Glow (Dim)</option>
+            <option value="zen">🍃 Zen Dark (Muted)</option>
+          </select>
+        </div>
+
+        <button id="btn-audio" class="icon-btn" aria-label="Toggle Sound" title="Suara FX">
+          <svg id="icon-sound-on" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="icon-sound-off" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <button id="btn-pause" class="icon-btn" aria-label="Pause Game" title="Jeda (Esc/P)">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- In-Game HUD -->
+    <section class="game-hud" aria-label="Heads Up Display">
+      <div class="hud-card">
+        <span class="hud-label">LEVEL</span>
+        <div class="hud-value" id="hud-level">01</div>
+        <span class="hud-sub" id="hud-level-name">Neon Dawn</span>
+      </div>
+
+      <div class="hud-card">
+        <span class="hud-label">SKOR</span>
+        <div class="hud-value glow-text" id="hud-score">000,000</div>
+        <span class="hud-sub" id="hud-high-score">HIGH: 0</span>
+      </div>
+
+      <div class="hud-card">
+        <span class="hud-label">LIVES</span>
+        <div class="lives-indicator" id="hud-lives">
+          <span class="life-pip active"></span>
+          <span class="life-pip active"></span>
+          <span class="life-pip active"></span>
+        </div>
+        <span class="hud-sub" id="hud-multiplier">COMBO x1.0</span>
+      </div>
+
+      <div class="hud-card hud-powerups" id="hud-active-buffs">
+        <span class="hud-label">ACTIVE BUFFS</span>
+        <div class="buff-slots" id="buff-slot-container">
+          <span class="no-buffs">None</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Canvas Play Area -->
+    <div class="canvas-container" id="canvas-container">
+      <canvas id="gameCanvas" width="900" height="600"></canvas>
+      
+      <!-- Interactive Overlays (Start, Pause, Victory, Game Over) -->
+      
+      <!-- Launch Hint Banner -->
+      <div id="launch-hint" class="launch-hint visible">
+        <span class="pulse-dot"></span>
+        <span>Klik atau tekan <b>SPASI</b> untuk meluncurkan bola</span>
+      </div>
+
+      <!-- Start Overlay Screen -->
+      <div id="overlay-start" class="game-overlay active">
+        <div class="overlay-modal">
+          <div class="modal-badge">NEON YELLOW HYPER-ARCADE</div>
+          <h2 class="modal-title">CYBER<span>BREAKER</span></h2>
+          <p class="modal-desc">
+            Hancurkan semua blok berteknologi tinggi dengan kombinasi kecepatan, pantulan presisi, dan kekuatan power-up super! Dirancang ramah mata untuk sesi bermain panjang.
+          </p>
+          
+          <div class="modal-tips">
+            <div class="tip-item">
+              <span class="tip-icon">🎮</span>
+              <span>Gunakan <b>Mouse</b> atau tombol <b>A / D / Panah</b> untuk menggerakkan paddle.</span>
+            </div>
+            <div class="tip-item">
+              <span class="tip-icon">⚡</span>
+              <span>Tangkap bola energi & kumpulkan <b>Power-Up</b> (Laser, Multi-Ball, Fireball, Shield).</span>
+            </div>
+            <div class="tip-item">
+              <span class="tip-icon">👁️</span>
+              <span>Ganti mode visual di kanan atas (Amber / Soft) jika ingin mata tetap rileks.</span>
+            </div>
+          </div>
+
+          <div class="overlay-actions">
+            <button id="btn-start-game" class="btn btn-primary">
+              <span>MULAI PERMAINAN</span>
+              <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+            <button id="btn-select-level-menu" class="btn btn-secondary">
+              <span>PILIH LEVEL</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Selection Modal -->
+      <div id="overlay-levels" class="game-overlay">
+        <div class="overlay-modal level-modal">
+          <div class="modal-badge">MISSION SELECT</div>
+          <h2 class="modal-title">PILIH <span>LEVEL</span></h2>
+          
+          <div class="level-grid" id="level-selection-grid">
+            <!-- Populated via JS -->
+          </div>
+
+          <div class="overlay-actions">
+            <button id="btn-back-from-levels" class="btn btn-secondary">KEMBALI</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause Overlay -->
+      <div id="overlay-pause" class="game-overlay">
+        <div class="overlay-modal pause-modal">
+          <div class="modal-badge">GAME DIJEDA</div>
+          <h2 class="modal-title">PAUSED</h2>
+          <p class="modal-desc">Ambil nafas sejenak, istirahatkan matamu atau atur kenyamanan visual.</p>
+
+          <div class="overlay-actions vertical">
+            <button id="btn-resume-game" class="btn btn-primary">LANJUTKAN</button>
+            <button id="btn-restart-level" class="btn btn-secondary">ULANGI LEVEL INI</button>
+            <button id="btn-quit-to-menu" class="btn btn-ghost">MENU UTAMA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Over Overlay -->
+      <div id="overlay-gameover" class="game-overlay">
+        <div class="overlay-modal gameover-modal">
+          <div class="modal-badge badge-danger">SYSTEM FAILURE</div>
+          <h2 class="modal-title glow-red">GAME <span>OVER</span></h2>
+          <p class="modal-desc">Semua cadangan bola energi telah habis.</p>
+
+          <div class="stats-summary">
+            <div class="stat-box">
+              <span class="stat-label">Skor Akhir</span>
+              <span class="stat-val glow-text" id="go-score">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Max Combo</span>
+              <span class="stat-val" id="go-combo">x0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Blok Dihancurkan</span>
+              <span class="stat-val" id="go-bricks">0</span>
+            </div>
+          </div>
+
+          <div class="overlay-actions">
+            <button id="btn-retry" class="btn btn-primary">MAIN LAGI</button>
+            <button id="btn-go-menu" class="btn btn-secondary">MENU LEVEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Victory Overlay -->
+      <div id="overlay-victory" class="game-overlay">
+        <div class="overlay-modal victory-modal">
+          <div class="modal-badge badge-gold">LEVEL BERSIH!</div>
+          <h2 class="modal-title">STAGE <span>CLEARED</span></h2>
+          <p class="modal-desc" id="vic-subtext">Semua matrix pertahanan blok berhasil ditembus!</p>
+
+          <div class="stats-summary">
+            <div class="stat-box">
+              <span class="stat-label">Skor Stage</span>
+              <span class="stat-val glow-text" id="vic-score">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Bonus Sisa Nyawa</span>
+              <span class="stat-val" id="vic-bonus">+0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Akurasi / Waktu</span>
+              <span class="stat-val" id="vic-time">00s</span>
+            </div>
+          </div>
+
+          <div class="overlay-actions">
+            <button id="btn-next-level" class="btn btn-primary">LEVEL SELANJUTNYA ➔</button>
+            <button id="btn-vic-menu" class="btn btn-secondary">MENU LEVEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Canvas FX UI Container for dynamic score text -->
+      <div id="hud-floating-layer" class="floating-layer"></div>
+    </div>
+
+    <!-- Bottom Controls & Keybindings Helper -->
+    <footer class="game-footer">
+      <div class="control-chips">
+        <div class="chip"><kbd>←</kbd> <kbd>→</kbd> / <kbd>A</kbd> <kbd>D</kbd> / <span class="mouse-icon">🖱️</span> Gerak</div>
+        <div class="chip"><kbd>SPASI</kbd> / <kbd>Klik</kbd> Luncurkan / Tembak Laser</div>
+        <div class="chip"><kbd>P</kbd> / <kbd>ESC</kbd> Jeda</div>
+      </div>
+      <div class="eye-comfort-notice">
+        <span class="comfort-pulse"></span>
+        <span>Aksen Kuning Terang Dioptimalkan dengan Lapisan Kontras Matte & Anti-Glare OLED</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Audio Synthesizer & Game Engine Scripts -->
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
